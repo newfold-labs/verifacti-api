@@ -1,0 +1,11 @@
+.*
+.*/
+vendor/bin
+vendor/phpunit
+vendor/doctrine
+vendor/myclabs
+vendor/nikic
+vendor/phar-io
+vendor/sebastian
+vendor/theseer
+tests/

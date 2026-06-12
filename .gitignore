@@ -1,0 +1,45 @@
+# IDE files
+.fleet
+.idea
+.vscode/*
+project.xml
+project.properties
+.project
+.settings*
+*.sublime-project
+*.sublime-workspace
+.sublimelinterrc
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Sass
+.sass-cache/
+
+# Eslint
+.eslintcache
+eslint_report.json
+
+# dependencies
+node_modules
+
+# Composer
+vendor/
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env
+
+# turbo
+.turbo
+
+# Build files
+*.zip
+
+.phpunit.result.cache
