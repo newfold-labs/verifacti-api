@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Bluehost\VerifactiApi\Exception;
 
+use Bluehost\VerifactiApi\Support\SensitiveDataHelper;
+
+/**
+ * Thrown when the Verifacti API returns a non-success HTTP response.
+ */
 class HttpException extends VerifactiException
 {
     private int $statusCode;
@@ -16,12 +21,17 @@ class HttpException extends VerifactiException
     private string $responseBody;
 
     /**
-     * @param array<string, string> $headers
+     * @param string               $message      Human-readable error message.
+     * @param int                  $statusCode   HTTP status code.
+     * @param array<string, string> $headers     Response headers.
+     * @param string               $responseBody Raw response body.
+     * @param int                  $code         Exception code.
+     * @param \Throwable|null      $previous     Previous exception.
      */
     public function __construct(
         string $message,
         int $statusCode,
-        array $headers = array(),
+        array $headers = [],
         string $responseBody = '',
         int $code = 0,
         ?\Throwable $previous = null
@@ -33,12 +43,19 @@ class HttpException extends VerifactiException
         $this->responseBody = $responseBody;
     }
 
+    /**
+     * Return the HTTP status code.
+     *
+     * @return int
+     */
     public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
     /**
+     * Return the HTTP response headers.
+     *
      * @return array<string, string>
      */
     public function getHeaders(): array
@@ -46,7 +63,22 @@ class HttpException extends VerifactiException
         return $this->headers;
     }
 
+    /**
+     * Return a truncated response body safe for logging.
+     *
+     * @return string
+     */
     public function getResponseBody(): string
+    {
+        return SensitiveDataHelper::truncate($this->responseBody);
+    }
+
+    /**
+     * Return the full untruncated response body for explicit debugging.
+     *
+     * @return string
+     */
+    public function getFullResponseBody(): string
     {
         return $this->responseBody;
     }

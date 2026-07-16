@@ -6,53 +6,62 @@ namespace Bluehost\VerifactiApi\Dto;
 
 use Bluehost\VerifactiApi\Support\Arrayable;
 
+/**
+ * Request payload for listing invoices in a fiscal period.
+ */
 final class InvoiceListRequest implements Arrayable
 {
-    private string $fiscalYear;
-    private string $period;
-    private ?string $series;
-    private ?string $number;
-    private ?DateRange $issueDateRange;
-    private ?string $issueDate;
-    private ?Pagination $pagination;
-
     /**
-     * @var array<string, mixed>
-     */
-    private array $extraFields;
-
-    /**
-     * @param array<string, mixed> $extraFields
+     * @param string               $fiscalYear     Fiscal year.
+     * @param string               $period         Fiscal period.
+     * @param string|null          $series         Optional invoice series filter.
+     * @param string|null          $number         Optional invoice number filter.
+     * @param DateRange|null       $issueDateRange Optional issue date range filter.
+     * @param string|null          $issueDate      Optional exact issue date filter.
+     * @param Pagination|null      $pagination     Optional pagination payload.
+     * @param array<string, mixed> $extraFields    Additional API fields.
      */
     public function __construct(
-        string $fiscalYear,
-        string $period,
-        ?string $series = null,
-        ?string $number = null,
-        ?DateRange $issueDateRange = null,
-        ?string $issueDate = null,
-        ?Pagination $pagination = null,
-        array $extraFields = array()
+        private string $fiscalYear,
+        private string $period,
+        private ?string $series = null,
+        private ?string $number = null,
+        private ?DateRange $issueDateRange = null,
+        private ?string $issueDate = null,
+        private ?Pagination $pagination = null,
+        private array $extraFields = []
     ) {
-        $this->fiscalYear = $fiscalYear;
-        $this->period = $period;
-        $this->series = $series;
-        $this->number = $number;
-        $this->issueDateRange = $issueDateRange;
-        $this->issueDate = $issueDate;
-        $this->pagination = $pagination;
-        $this->extraFields = $extraFields;
     }
 
     /**
-     * @return array<string, mixed>
+     * Return the fiscal year.
+     *
+     * @return string
+     */
+    public function getFiscalYear(): string
+    {
+        return $this->fiscalYear;
+    }
+
+    /**
+     * Return the fiscal period.
+     *
+     * @return string
+     */
+    public function getPeriod(): string
+    {
+        return $this->period;
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function toArray(): array
     {
-        $payload = array(
+        $payload = [
             'ejercicio' => $this->fiscalYear,
             'periodo' => $this->period,
-        );
+        ];
 
         if ($this->series !== null) {
             $payload['serie'] = $this->series;

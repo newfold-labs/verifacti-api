@@ -7,6 +7,9 @@ namespace Bluehost\VerifactiApi\Builder;
 use Bluehost\VerifactiApi\Dto\CorrectiveAmounts;
 use Bluehost\VerifactiApi\Dto\InvoiceReference;
 
+/**
+ * Fluent builder for corrective invoice metadata.
+ */
 final class CorrectiveInvoiceBuilder
 {
     private ?string $rectificationType = null;
@@ -15,13 +18,18 @@ final class CorrectiveInvoiceBuilder
     /**
      * @var array<int, InvoiceReference>
      */
-    private array $rectifiedInvoices = array();
+    private array $rectifiedInvoices = [];
 
     /**
      * @var array<int, InvoiceReference>
      */
-    private array $replacedInvoices = array();
+    private array $replacedInvoices = [];
 
+    /**
+     * Mark the corrective invoice as substitution-based.
+     *
+     * @return self
+     */
     public function bySubstitution(): self
     {
         $this->rectificationType = 'S';
@@ -29,6 +37,11 @@ final class CorrectiveInvoiceBuilder
         return $this;
     }
 
+    /**
+     * Mark the corrective invoice as difference-based.
+     *
+     * @return self
+     */
     public function byDifference(): self
     {
         $this->rectificationType = 'I';
@@ -36,6 +49,14 @@ final class CorrectiveInvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set rectified base and tax amounts.
+     *
+     * @param string $baseRectificada   Rectified taxable base.
+     * @param string $cuotaRectificada  Rectified tax amount.
+     *
+     * @return self
+     */
     public function withRectifiedAmounts(string $baseRectificada, string $cuotaRectificada): self
     {
         $this->rectificationAmounts = new CorrectiveAmounts($baseRectificada, $cuotaRectificada);
@@ -43,6 +64,13 @@ final class CorrectiveInvoiceBuilder
         return $this;
     }
 
+    /**
+     * Append a rectified invoice reference.
+     *
+     * @param InvoiceReference $reference Rectified invoice reference.
+     *
+     * @return self
+     */
     public function addCorrectedInvoice(InvoiceReference $reference): self
     {
         $this->rectifiedInvoices[] = $reference;
@@ -50,6 +78,13 @@ final class CorrectiveInvoiceBuilder
         return $this;
     }
 
+    /**
+     * Append a replaced invoice reference.
+     *
+     * @param InvoiceReference $reference Replaced invoice reference.
+     *
+     * @return self
+     */
     public function addReplacedInvoice(InvoiceReference $reference): self
     {
         $this->replacedInvoices[] = $reference;
@@ -58,11 +93,13 @@ final class CorrectiveInvoiceBuilder
     }
 
     /**
+     * Build the corrective invoice payload fragment.
+     *
      * @return array<string, mixed>
      */
     public function build(): array
     {
-        $payload = array();
+        $payload = [];
 
         if ($this->rectificationType !== null) {
             $payload['tipo_rectificativa'] = $this->rectificationType;
@@ -72,11 +109,11 @@ final class CorrectiveInvoiceBuilder
             $payload['importe_rectificativa'] = $this->rectificationAmounts;
         }
 
-        if ($this->rectifiedInvoices !== array()) {
+        if ($this->rectifiedInvoices !== []) {
             $payload['facturas_rectificadas'] = $this->rectifiedInvoices;
         }
 
-        if ($this->replacedInvoices !== array()) {
+        if ($this->replacedInvoices !== []) {
             $payload['facturas_sustituidas'] = $this->replacedInvoices;
         }
 

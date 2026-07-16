@@ -6,120 +6,93 @@ namespace Bluehost\VerifactiApi\Dto;
 
 use Bluehost\VerifactiApi\Support\Arrayable;
 
+/**
+ * Base request payload for invoice create and modify operations.
+ */
 abstract class AbstractInvoiceRequest implements Arrayable
 {
-    protected string $series;
-    protected string $number;
-    protected string $issueDate;
-    protected ?string $operationDate;
-    protected string $invoiceType;
-    protected string $description;
-
     /**
-     * @var array<int, InvoiceLine>
-     */
-    protected array $lines;
-
-    protected string $totalAmount;
-    protected ?string $nif;
-    protected ?OtherIdentifier $otherIdentifier;
-    protected ?string $recipientName;
-    protected ?bool $validateRecipient;
-    protected ?string $rectificationType;
-    protected ?CorrectiveAmounts $rectificationAmounts;
-
-    /**
-     * @var array<int, InvoiceReference>
-     */
-    protected array $rectifiedInvoices;
-
-    /**
-     * @var array<int, InvoiceReference>
-     */
-    protected array $replacedInvoices;
-
-    protected ?string $incidentCode;
-    protected ?SpecialInvoiceData $specialData;
-
-    /**
-     * @var array<string, mixed>
-     */
-    protected array $extraFields;
-
-    /**
-     * @param array<int, InvoiceLine> $lines
-     * @param array<int, InvoiceReference> $rectifiedInvoices
-     * @param array<int, InvoiceReference> $replacedInvoices
-     * @param array<string, mixed> $extraFields
+     * @param array<int, InvoiceLine>        $lines
+     * @param array<int, InvoiceReference>   $rectifiedInvoices
+     * @param array<int, InvoiceReference>   $replacedInvoices
+     * @param array<string, mixed>           $extraFields
      */
     public function __construct(
-        string $series,
-        string $number,
-        string $issueDate,
-        string $invoiceType,
-        string $description,
-        array $lines,
-        string $totalAmount,
-        ?string $operationDate = null,
-        ?string $nif = null,
-        ?OtherIdentifier $otherIdentifier = null,
-        ?string $recipientName = null,
-        ?bool $validateRecipient = null,
-        ?string $rectificationType = null,
-        ?CorrectiveAmounts $rectificationAmounts = null,
-        array $rectifiedInvoices = array(),
-        array $replacedInvoices = array(),
-        ?string $incidentCode = null,
-        ?SpecialInvoiceData $specialData = null,
-        array $extraFields = array()
+        protected string $series,
+        protected string $number,
+        protected string $issueDate,
+        protected string $invoiceType,
+        protected string $description,
+        protected array $lines,
+        protected string $totalAmount,
+        protected ?string $operationDate = null,
+        protected ?string $nif = null,
+        protected ?OtherIdentifier $otherIdentifier = null,
+        protected ?string $recipientName = null,
+        protected ?bool $validateRecipient = null,
+        protected ?string $rectificationType = null,
+        protected ?CorrectiveAmounts $rectificationAmounts = null,
+        protected array $rectifiedInvoices = [],
+        protected array $replacedInvoices = [],
+        protected ?string $incidentCode = null,
+        protected ?SpecialInvoiceData $specialData = null,
+        protected array $extraFields = []
     ) {
-        $this->series = $series;
-        $this->number = $number;
-        $this->issueDate = $issueDate;
-        $this->invoiceType = $invoiceType;
-        $this->description = $description;
-        $this->lines = $lines;
-        $this->totalAmount = $totalAmount;
-        $this->operationDate = $operationDate;
-        $this->nif = $nif;
-        $this->otherIdentifier = $otherIdentifier;
-        $this->recipientName = $recipientName;
-        $this->validateRecipient = $validateRecipient;
-        $this->rectificationType = $rectificationType;
-        $this->rectificationAmounts = $rectificationAmounts;
-        $this->rectifiedInvoices = $rectifiedInvoices;
-        $this->replacedInvoices = $replacedInvoices;
-        $this->incidentCode = $incidentCode;
-        $this->specialData = $specialData;
-        $this->extraFields = $extraFields;
     }
 
+    /**
+     * Return the invoice series.
+     *
+     * @return string
+     */
     public function getSeries(): string
     {
         return $this->series;
     }
 
+    /**
+     * Return the invoice number.
+     *
+     * @return string
+     */
     public function getNumber(): string
     {
         return $this->number;
     }
 
+    /**
+     * Return the issue date in API format.
+     *
+     * @return string
+     */
     public function getIssueDate(): string
     {
         return $this->issueDate;
     }
 
+    /**
+     * Return the invoice type code.
+     *
+     * @return string
+     */
     public function getInvoiceType(): string
     {
         return $this->invoiceType;
     }
 
+    /**
+     * Return the invoice description.
+     *
+     * @return string
+     */
     public function getDescription(): string
     {
         return $this->description;
     }
 
     /**
+     * Return invoice line items.
+     *
      * @return array<int, InvoiceLine>
      */
     public function getLines(): array
@@ -127,27 +100,49 @@ abstract class AbstractInvoiceRequest implements Arrayable
         return $this->lines;
     }
 
+    /**
+     * Return the total invoice amount.
+     *
+     * @return string
+     */
     public function getTotalAmount(): string
     {
         return $this->totalAmount;
     }
 
+    /**
+     * Return the operation date, if set.
+     *
+     * @return string|null
+     */
     public function getOperationDate(): ?string
     {
         return $this->operationDate;
     }
 
+    /**
+     * Return the rectification type, if set.
+     *
+     * @return string|null
+     */
     public function getRectificationType(): ?string
     {
         return $this->rectificationType;
     }
 
+    /**
+     * Return rectification amounts, if set.
+     *
+     * @return CorrectiveAmounts|null
+     */
     public function getRectificationAmounts(): ?CorrectiveAmounts
     {
         return $this->rectificationAmounts;
     }
 
     /**
+     * Return rectified invoice references.
+     *
      * @return array<int, InvoiceReference>
      */
     public function getRectifiedInvoices(): array
@@ -156,6 +151,8 @@ abstract class AbstractInvoiceRequest implements Arrayable
     }
 
     /**
+     * Return replaced invoice references.
+     *
      * @return array<int, InvoiceReference>
      */
     public function getReplacedInvoices(): array
@@ -164,12 +161,14 @@ abstract class AbstractInvoiceRequest implements Arrayable
     }
 
     /**
-     * Build a modify (PUT /verifactu/modify) request from this invoice payload.
+     * Build a modify request from this invoice payload.
      *
-     * @param string|null $series                   Override serie (e.g. stored AEAT identifiers).
-     * @param string|null $number                   Override numero.
-     * @param string|null $issueDate                Override fecha_expedicion.
-     * @param string|null $previousRejectionStatus  rechazo_previo (typically "N" or "S").
+     * @param string|null $series                  Override serie.
+     * @param string|null $number                  Override numero.
+     * @param string|null $issueDate               Override fecha_expedicion.
+     * @param string|null $previousRejectionStatus rechazo_previo value.
+     *
+     * @return InvoiceModifyRequest
      */
     public function toModifyRequest(
         ?string $series = null,
@@ -202,11 +201,11 @@ abstract class AbstractInvoiceRequest implements Arrayable
     }
 
     /**
-     * @return array<string, mixed>
+     * {@inheritDoc}
      */
     public function toArray(): array
     {
-        $payload = array(
+        $payload = [
             'serie' => $this->series,
             'numero' => $this->number,
             'fecha_expedicion' => $this->issueDate,
@@ -216,7 +215,7 @@ abstract class AbstractInvoiceRequest implements Arrayable
                 return $line->toArray();
             }, $this->lines),
             'importe_total' => $this->totalAmount,
-        );
+        ];
 
         if ($this->operationDate !== null) {
             $payload['fecha_operacion'] = $this->operationDate;
@@ -246,13 +245,13 @@ abstract class AbstractInvoiceRequest implements Arrayable
             $payload['importe_rectificativa'] = $this->rectificationAmounts->toArray();
         }
 
-        if ($this->rectifiedInvoices !== array()) {
+        if ($this->rectifiedInvoices !== []) {
             $payload['facturas_rectificadas'] = array_map(static function (InvoiceReference $reference): array {
                 return $reference->toArray();
             }, $this->rectifiedInvoices);
         }
 
-        if ($this->replacedInvoices !== array()) {
+        if ($this->replacedInvoices !== []) {
             $payload['facturas_sustituidas'] = array_map(static function (InvoiceReference $reference): array {
                 return $reference->toArray();
             }, $this->replacedInvoices);

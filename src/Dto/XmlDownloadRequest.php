@@ -6,25 +6,49 @@ namespace Bluehost\VerifactiApi\Dto;
 
 use Bluehost\VerifactiApi\Support\Arrayable;
 
+/**
+ * Request payload for downloading invoice XML for a specific invoice.
+ */
 final class XmlDownloadRequest implements Arrayable
 {
-    private string $series;
-    private string $number;
-
-    public function __construct(string $series, string $number)
-    {
-        $this->series = $series;
-        $this->number = $number;
+    /**
+     * @param string $series Invoice series.
+     * @param string $number Invoice number.
+     */
+    public function __construct(
+        private string $series,
+        private string $number
+    ) {
     }
 
     /**
-     * @return array<string, mixed>
+     * Return the invoice series.
+     *
+     * @return string
+     */
+    public function getSeries(): string
+    {
+        return $this->series;
+    }
+
+    /**
+     * Return the invoice number.
+     *
+     * @return string
+     */
+    public function getNumber(): string
+    {
+        return $this->number;
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function toArray(): array
     {
-        return array(
+        return [
             'serie' => $this->series,
             'numero' => $this->number,
-        );
+        ];
     }
 }

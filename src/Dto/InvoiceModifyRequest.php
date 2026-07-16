@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Bluehost\VerifactiApi\Dto;
 
+/**
+ * Request payload for modifying an existing invoice.
+ */
 final class InvoiceModifyRequest extends AbstractInvoiceRequest
 {
-    private ?string $previousRejectionStatus;
-
     /**
-     * @param array<int, InvoiceLine> $lines
+     * @param array<int, InvoiceLine>      $lines
      * @param array<int, InvoiceReference> $rectifiedInvoices
      * @param array<int, InvoiceReference> $replacedInvoices
-     * @param array<string, mixed> $extraFields
+     * @param array<string, mixed>         $extraFields
      */
     public function __construct(
         string $series,
@@ -29,12 +30,12 @@ final class InvoiceModifyRequest extends AbstractInvoiceRequest
         ?bool $validateRecipient = null,
         ?string $rectificationType = null,
         ?CorrectiveAmounts $rectificationAmounts = null,
-        array $rectifiedInvoices = array(),
-        array $replacedInvoices = array(),
+        array $rectifiedInvoices = [],
+        array $replacedInvoices = [],
         ?string $incidentCode = null,
         ?SpecialInvoiceData $specialData = null,
-        array $extraFields = array(),
-        ?string $previousRejectionStatus = null
+        array $extraFields = [],
+        private ?string $previousRejectionStatus = null
     ) {
         parent::__construct(
             $series,
@@ -57,17 +58,20 @@ final class InvoiceModifyRequest extends AbstractInvoiceRequest
             $specialData,
             $extraFields
         );
-
-        $this->previousRejectionStatus = $previousRejectionStatus;
     }
 
+    /**
+     * Return the previous rejection status code.
+     *
+     * @return string|null
+     */
     public function getPreviousRejectionStatus(): ?string
     {
         return $this->previousRejectionStatus;
     }
 
     /**
-     * @return array<string, mixed>
+     * {@inheritDoc}
      */
     public function toArray(): array
     {

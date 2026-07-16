@@ -6,25 +6,24 @@ namespace Bluehost\VerifactiApi\Dto;
 
 use Bluehost\VerifactiApi\Support\Arrayable;
 
+/**
+ * Request payload for creating multiple invoices in one call.
+ */
 final class BulkInvoiceCreateRequest implements Arrayable
 {
     /**
-     * @var array<int, InvoiceCreateRequest>
+     * @param array<int, InvoiceCreateRequest> $invoices   Invoice payloads.
+     * @param string|null                      $wrapperKey Optional wrapper key for the payload.
      */
-    private array $invoices;
-
-    private ?string $wrapperKey;
-
-    /**
-     * @param array<int, InvoiceCreateRequest> $invoices
-     */
-    public function __construct(array $invoices, ?string $wrapperKey = 'facturas')
-    {
-        $this->invoices = $invoices;
-        $this->wrapperKey = $wrapperKey;
+    public function __construct(
+        private array $invoices,
+        private ?string $wrapperKey = 'facturas'
+    ) {
     }
 
     /**
+     * Return the invoice payloads.
+     *
      * @return array<int, InvoiceCreateRequest>
      */
     public function getInvoices(): array
@@ -33,7 +32,7 @@ final class BulkInvoiceCreateRequest implements Arrayable
     }
 
     /**
-     * @return array<string, mixed>
+     * {@inheritDoc}
      */
     public function toArray(): array
     {
@@ -45,8 +44,8 @@ final class BulkInvoiceCreateRequest implements Arrayable
             return $payload;
         }
 
-        return array(
+        return [
             $this->wrapperKey => $payload,
-        );
+        ];
     }
 }

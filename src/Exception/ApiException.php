@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Bluehost\VerifactiApi\Exception;
 
+/**
+ * Thrown when the Verifacti API returns a structured JSON error response.
+ */
 class ApiException extends HttpException
 {
     /**
@@ -12,15 +15,20 @@ class ApiException extends HttpException
     private array $errorData;
 
     /**
-     * @param array<string, string> $headers
-     * @param array<string, mixed> $errorData
+     * @param string                $message      Human-readable error message.
+     * @param int                   $statusCode   HTTP status code.
+     * @param array<string, string> $headers      Response headers.
+     * @param string                $responseBody Raw response body.
+     * @param array<string, mixed>  $errorData    Decoded JSON error payload.
+     * @param int                   $code         Exception code.
+     * @param \Throwable|null       $previous     Previous exception.
      */
     public function __construct(
         string $message,
         int $statusCode,
-        array $headers = array(),
+        array $headers = [],
         string $responseBody = '',
-        array $errorData = array(),
+        array $errorData = [],
         int $code = 0,
         ?\Throwable $previous = null
     ) {
@@ -29,6 +37,8 @@ class ApiException extends HttpException
     }
 
     /**
+     * Return the decoded JSON error payload.
+     *
      * @return array<string, mixed>
      */
     public function getErrorData(): array

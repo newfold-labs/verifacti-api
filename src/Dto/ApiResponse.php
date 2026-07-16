@@ -4,49 +4,41 @@ declare(strict_types=1);
 
 namespace Bluehost\VerifactiApi\Dto;
 
+use Bluehost\VerifactiApi\Support\Arrayable;
 use Bluehost\VerifactiApi\Support\ResponseAccessor;
 
+/**
+ * Base decoded API response wrapper.
+ */
 class ApiResponse
 {
-    private int $statusCode;
-
     /**
-     * @var array<string, mixed>
-     */
-    private array $data;
-
-    private string $rawBody;
-
-    /**
-     * @var array<string, string>
-     */
-    private array $headers;
-
-    /**
-     * @var array<string, mixed>
-     */
-    private array $metadata;
-
-    /**
-     * @param array<string, mixed> $data
+     * @param array<string, mixed>  $data
      * @param array<string, string> $headers
-     * @param array<string, mixed> $metadata
+     * @param array<string, mixed>  $metadata
      */
-    public function __construct(int $statusCode, array $data, string $rawBody, array $headers = array(), array $metadata = array())
-    {
-        $this->statusCode = $statusCode;
-        $this->data = $data;
-        $this->rawBody = $rawBody;
-        $this->headers = $headers;
-        $this->metadata = $metadata;
+    public function __construct(
+        private int $statusCode,
+        private array $data,
+        private string $rawBody,
+        private array $headers = [],
+        private array $metadata = []
+    ) {
     }
 
+    /**
+     * Return the HTTP status code.
+     *
+     * @return int
+     */
     public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
     /**
+     * Return the decoded response data.
+     *
      * @return array<string, mixed>
      */
     public function getData(): array
@@ -54,12 +46,19 @@ class ApiResponse
         return $this->data;
     }
 
+    /**
+     * Return the raw response body.
+     *
+     * @return string
+     */
     public function getRawBody(): string
     {
         return $this->rawBody;
     }
 
     /**
+     * Return the response headers.
+     *
      * @return array<string, string>
      */
     public function getHeaders(): array
@@ -68,6 +67,8 @@ class ApiResponse
     }
 
     /**
+     * Return transport metadata.
+     *
      * @return array<string, mixed>
      */
     public function getMetadata(): array
@@ -76,11 +77,14 @@ class ApiResponse
     }
 
     /**
-     * @param mixed $default
+     * Return a nested value from the decoded response data.
+     *
+     * @param string $path    Dot-separated path.
+     * @param mixed  $default Default value when the path is missing.
      *
      * @return mixed
      */
-    public function get(string $path, $default = null)
+    public function get(string $path, mixed $default = null): mixed
     {
         return ResponseAccessor::get($this->data, $path, $default);
     }
