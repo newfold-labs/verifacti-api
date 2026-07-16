@@ -1,10 +1,6 @@
 # Bluehost Verifacti API
 
-Framework-agnostic PHP 7.4+ library for integrating the Verifacti REST API for Spanish electronic invoicing.
-
-The code lives under `wp-content/plugins/verifacti-api` because that is the requested output directory, but the package itself is a reusable Composer library. It does not use any WordPress APIs, hooks, constants, or bootstrap logic.
-
-## Features
+Framework-agnostic PHP 8.0+ library for integrating the Verifacti REST API for Spanish electronic invoicing.
 
 - PSR-4 autoloading and Composer-friendly structure
 - cURL-based default HTTP transport behind an adapter interface
@@ -30,14 +26,20 @@ The code lives under `wp-content/plugins/verifacti-api` because that is the requ
 
 ## Installation
 
+In your composer.json file add these lines:
 ```bash
-composer install
-```
-
-If you want to consume the library from another project:
-
-```bash
-composer require bluehost/verifacti-api
+"repositories": {
+    "newfold": {
+      "type": "composer",
+      "url": "https://newfold-labs.github.io/satis/",
+      "only": [
+        "newfold-labs/*"
+      ]
+    }
+  },
+    "require": {
+    "newfold-labs/verifacti-api": "0.2.0"
+  },
 ```
 
 ## Quick start

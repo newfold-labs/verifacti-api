@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Bluehost\VerifactiApi\Transport;
 
+/**
+ * Represents an HTTP response received from the Verifacti API.
+ */
 final class HttpResponse
 {
     private int $statusCode;
@@ -21,10 +24,12 @@ final class HttpResponse
     private array $metadata;
 
     /**
-     * @param array<string, string> $headers
-     * @param array<string, mixed> $metadata
+     * @param int                   $statusCode HTTP status code.
+     * @param array<string, string> $headers    Response headers.
+     * @param string                $body       Response body.
+     * @param array<string, mixed>  $metadata   Transport metadata.
      */
-    public function __construct(int $statusCode, array $headers, string $body, array $metadata = array())
+    public function __construct(int $statusCode, array $headers, string $body, array $metadata = [])
     {
         $this->statusCode = $statusCode;
         $this->headers = $headers;
@@ -32,12 +37,19 @@ final class HttpResponse
         $this->metadata = $metadata;
     }
 
+    /**
+     * Return the HTTP status code.
+     *
+     * @return int
+     */
     public function getStatusCode(): int
     {
         return $this->statusCode;
     }
 
     /**
+     * Return the response headers.
+     *
      * @return array<string, string>
      */
     public function getHeaders(): array
@@ -45,12 +57,19 @@ final class HttpResponse
         return $this->headers;
     }
 
+    /**
+     * Return the response body.
+     *
+     * @return string
+     */
     public function getBody(): string
     {
         return $this->body;
     }
 
     /**
+     * Return transport metadata collected by the HTTP adapter.
+     *
      * @return array<string, mixed>
      */
     public function getMetadata(): array
@@ -58,13 +77,23 @@ final class HttpResponse
         return $this->metadata;
     }
 
+    /**
+     * Determine whether the response represents a successful HTTP status.
+     *
+     * @return bool
+     */
     public function isSuccessful(): bool
     {
         return $this->statusCode >= 200 && $this->statusCode < 300;
     }
 
+    /**
+     * Return the Content-Type header value, if present.
+     *
+     * @return string
+     */
     public function getContentType(): string
     {
-        return isset($this->headers['content-type']) ? $this->headers['content-type'] : '';
+        return $this->headers['content-type'] ?? '';
     }
 }

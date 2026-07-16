@@ -10,63 +10,107 @@ use Bluehost\VerifactiApi\Exception\ApiException;
 use Bluehost\VerifactiApi\Exception\AuthenticationException;
 use Bluehost\VerifactiApi\Exception\HttpException;
 use Bluehost\VerifactiApi\Exception\SerializationException;
+use Bluehost\VerifactiApi\Exception\TransportException;
 use Bluehost\VerifactiApi\Serializer\JsonSerializer;
 use Bluehost\VerifactiApi\Support\ResponseAccessor;
 use Bluehost\VerifactiApi\Transport\HttpRequest;
 use Bluehost\VerifactiApi\Transport\HttpResponse;
 use Bluehost\VerifactiApi\Transport\HttpTransportInterface;
 
+/**
+ * Executes HTTP requests against the Verifacti API and maps responses to DTOs.
+ */
 final class ApiExecutor
 {
-    private VerifactiConfig $config;
-    private HttpTransportInterface $transport;
-    private JsonSerializer $serializer;
-
-    public function __construct(VerifactiConfig $config, HttpTransportInterface $transport, JsonSerializer $serializer)
-    {
-        $this->config = $config;
-        $this->transport = $transport;
-        $this->serializer = $serializer;
+    public function __construct(
+        private VerifactiConfig $config,
+        private HttpTransportInterface $transport,
+        private JsonSerializer $serializer
+    ) {
     }
 
     /**
-     * @param array<string, string> $query
+     * Send a GET request.
+     *
+     * @param string               $path  API path.
+     * @param array<string, string> $query Query string parameters.
+     *
+     * @return ApiResponse
+     *
+     * @throws AuthenticationException
+     * @throws ApiException
+     * @throws HttpException
+     * @throws SerializationException
+     * @throws TransportException
      */
-    public function get(string $path, array $query = array()): ApiResponse
+    public function get(string $path, array $query = []): ApiResponse
     {
         return $this->request('GET', $path, null, $query);
     }
 
     /**
-     * @param array<string, mixed> $payload
-     * @param array<string, string> $headers
+     * Send a POST request.
+     *
+     * @param string                $path    API path.
+     * @param array<string, mixed>  $payload Request body.
+     * @param array<string, string> $headers Additional request headers.
+     *
+     * @return ApiResponse
+     *
+     * @throws AuthenticationException
+     * @throws ApiException
+     * @throws HttpException
+     * @throws SerializationException
+     * @throws TransportException
      */
-    public function post(string $path, array $payload = array(), array $headers = array()): ApiResponse
+    public function post(string $path, array $payload = [], array $headers = []): ApiResponse
     {
-
-        return $this->request('POST', $path, $payload, array(), $headers);
+        return $this->request('POST', $path, $payload, [], $headers);
     }
 
     /**
-     * @param array<string, mixed> $payload
-     * @param array<string, string> $headers
+     * Send a PUT request.
+     *
+     * @param string                $path    API path.
+     * @param array<string, mixed>  $payload Request body.
+     * @param array<string, string> $headers Additional request headers.
+     *
+     * @return ApiResponse
+     *
+     * @throws AuthenticationException
+     * @throws ApiException
+     * @throws HttpException
+     * @throws SerializationException
+     * @throws TransportException
      */
-    public function put(string $path, array $payload = array(), array $headers = array()): ApiResponse
+    public function put(string $path, array $payload = [], array $headers = []): ApiResponse
     {
-        return $this->request('PUT', $path, $payload, array(), $headers);
+        return $this->request('PUT', $path, $payload, [], $headers);
     }
 
     /**
-     * @param array<string, mixed>|null $payload
-     * @param array<string, string> $query
-     * @param array<string, string> $headers
+     * Send an HTTP request to the Verifacti API.
+     *
+     * @param string                $method  HTTP method.
+     * @param string                $path    API path.
+     * @param array<string, mixed>|null $payload Request body.
+     * @param array<string, string> $query   Query string parameters.
+     * @param array<string, string> $headers Additional request headers.
+     *
+     * @return ApiResponse
+     *
+     * @throws AuthenticationException
+     * @throws ApiException
+     * @throws HttpException
+     * @throws SerializationException
+     * @throws TransportException
      */
     public function request(
         string $method,
         string $path,
         ?array $payload = null,
-        array $query = array(),
-        array $headers = array()
+        array $query = [],
+        array $headers = []
     ): ApiResponse {
         $requestHeaders = array_merge($this->config->getDefaultHeaders(), $headers);
         $body = $payload !== null ? $this->serializer->encode($payload) : null;
@@ -96,23 +140,39 @@ final class ApiExecutor
     }
 
     /**
+     * Decode a successful response body.
+     *
+     * @param HttpResponse $response HTTP response.
+     *
      * @return array<string, mixed>
+     *
+     * @throws SerializationException
      */
     private function decodeSuccessBody(HttpResponse $response): array
     {
         $body = $response->getBody();
 
         if (trim($body) === '') {
-            return array();
+            return [];
         }
 
         if ($this->looksLikeJson($response)) {
             return $this->serializer->decode($body);
         }
 
-        return array('_raw' => $body);
+        return ['_raw' => $body];
     }
 
+    /**
+     * Throw the appropriate exception for an error response.
+     *
+     * @param HttpResponse $response HTTP response.
+     *
+     * @throws AuthenticationException
+     * @throws ApiException
+     * @throws HttpException
+     * @throws SerializationException
+     */
     private function throwForErrorResponse(HttpResponse $response): void
     {
         $body = $response->getBody();
@@ -122,11 +182,10 @@ final class ApiExecutor
         if (!$this->looksLikeJson($response)) {
             $message = trim($body) !== '' ? trim($body) : sprintf('HTTP %d returned by the Verifacti API.', $statusCode);
 
-            if ($statusCode === 401 || $statusCode === 403) {
-                throw new AuthenticationException($message, $statusCode, $headers, $body);
-            }
-
-            throw new HttpException($message, $statusCode, $headers, $body);
+            throw match (true) {
+                $statusCode === 401, $statusCode === 403 => new AuthenticationException($message, $statusCode, $headers, $body),
+                default => new HttpException($message, $statusCode, $headers, $body),
+            };
         }
 
         try {
@@ -144,23 +203,29 @@ final class ApiExecutor
 
         $messageValue = ResponseAccessor::first(
             $errorData,
-            array('message', 'error', 'detail', 'details.message'),
+            ['message', 'error', 'detail', 'details.message'],
             sprintf('HTTP %d returned by the Verifacti API.', $statusCode)
         );
 
         $message = is_scalar($messageValue) ? (string) $messageValue : sprintf('HTTP %d returned by the Verifacti API.', $statusCode);
 
-        if ($statusCode === 401 || $statusCode === 403) {
-            throw new AuthenticationException($message, $statusCode, $headers, $body);
-        }
-
-        throw new ApiException($message, $statusCode, $headers, $body, $errorData);
+        throw match (true) {
+            $statusCode === 401, $statusCode === 403 => new AuthenticationException($message, $statusCode, $headers, $body),
+            default => new ApiException($message, $statusCode, $headers, $body, $errorData),
+        };
     }
 
+    /**
+     * Determine whether the response body appears to contain JSON.
+     *
+     * @param HttpResponse $response HTTP response.
+     *
+     * @return bool
+     */
     private function looksLikeJson(HttpResponse $response): bool
     {
         $contentType = strtolower($response->getContentType());
-        if (strpos($contentType, 'application/json') !== false) {
+        if (str_contains($contentType, 'application/json')) {
             return true;
         }
 

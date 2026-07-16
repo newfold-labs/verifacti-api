@@ -32,19 +32,25 @@ use Bluehost\VerifactiApi\Service\StatusService;
 use Bluehost\VerifactiApi\Transport\HttpTransportInterface;
 use Bluehost\VerifactiApi\Validator\RequestValidator;
 
+/**
+ * Facade client for the Verifacti API.
+ */
 final class VerifactiClient implements ClientInterface
 {
-    private VerifactiConfig $config;
     private HealthService $healthService;
     private StatusService $statusService;
     private InvoiceService $invoiceService;
     private ExportService $exportService;
     private DeclarationService $declarationService;
 
-    public function __construct(VerifactiConfig $config, HttpTransportInterface $transport)
-    {
-        $this->config = $config;
-
+    /**
+     * @param VerifactiConfig          $config    Client configuration.
+     * @param HttpTransportInterface $transport HTTP transport implementation.
+     */
+    public function __construct(
+        private VerifactiConfig $config,
+        HttpTransportInterface $transport
+    ) {
         $validator = new RequestValidator();
         $executor = new ApiExecutor($config, $transport, new JsonSerializer());
 
@@ -55,86 +61,139 @@ final class VerifactiClient implements ClientInterface
         $this->declarationService = new DeclarationService($executor);
     }
 
+    /**
+     * Return the client configuration.
+     *
+     * @return VerifactiConfig
+     */
     public function getConfig(): VerifactiConfig
     {
         return $this->config;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function healthCheck(): HealthResponse
     {
         return $this->healthService->check();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getRecordStatus(RecordStatusLookupRequest $request): StatusResponse
     {
         return $this->statusService->getRecordStatus($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getInvoiceStatus(InvoiceStatusLookupRequest $request): StatusResponse
     {
         return $this->statusService->getInvoiceStatus($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function createInvoice(InvoiceCreateRequest $request, ?string $idempotencyKey = null): InvoiceOperationResponse
     {
         return $this->invoiceService->create($request, $idempotencyKey);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function createBulkInvoices(BulkInvoiceCreateRequest $request): BulkCreateResponse
     {
         return $this->invoiceService->createBulk($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function modifyInvoice(InvoiceModifyRequest $request): InvoiceOperationResponse
     {
         return $this->invoiceService->modify($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function cancelInvoice(InvoiceCancelRequest $request): InvoiceOperationResponse
     {
         return $this->invoiceService->cancel($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function listInvoices(InvoiceListRequest $request): InvoiceListResponse
     {
         return $this->invoiceService->list($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function exportXml(XmlExportRequest $request): XmlExportResponse
     {
         return $this->exportService->export($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function downloadXml(XmlDownloadRequest $request): XmlDownloadResponse
     {
         return $this->exportService->download($request);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function fetchDeclaration(): DeclarationResponse
     {
         return $this->declarationService->fetch();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function health(): HealthService
     {
         return $this->healthService;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function status(): StatusService
     {
         return $this->statusService;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function invoices(): InvoiceService
     {
         return $this->invoiceService;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function exports(): ExportService
     {
         return $this->exportService;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function declaration(): DeclarationService
     {
         return $this->declarationService;

@@ -7,10 +7,19 @@ namespace Bluehost\VerifactiApi\Serializer;
 use Bluehost\VerifactiApi\Exception\SerializationException;
 use JsonException;
 
+/**
+ * JSON encoder and decoder for Verifacti API payloads.
+ */
 final class JsonSerializer
 {
     /**
-     * @param array<string, mixed> $payload
+     * Encode a payload as JSON.
+     *
+     * @param array<string, mixed> $payload Request payload.
+     *
+     * @return string
+     *
+     * @throws SerializationException When encoding fails.
      */
     public function encode(array $payload): string
     {
@@ -22,12 +31,18 @@ final class JsonSerializer
     }
 
     /**
+     * Decode a JSON payload into an associative array.
+     *
+     * @param string $payload JSON string.
+     *
      * @return array<string, mixed>
+     *
+     * @throws SerializationException When decoding fails or the payload is not an array.
      */
     public function decode(string $payload): array
     {
         if (trim($payload) === '') {
-            return array();
+            return [];
         }
 
         try {

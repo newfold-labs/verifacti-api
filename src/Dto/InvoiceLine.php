@@ -6,74 +6,83 @@ namespace Bluehost\VerifactiApi\Dto;
 
 use Bluehost\VerifactiApi\Support\Arrayable;
 
+/**
+ * Invoice line item payload.
+ */
 final class InvoiceLine implements Arrayable
 {
-    private string $taxableBase;
-    private ?string $taxRate;
-    private ?string $taxAmount;
-    private ?string $exemptOperationCode;
-    private ?string $operationClassification;
-    private ?string $regimeKey;
-
     /**
-     * @var array<string, mixed>
-     */
-    private array $extraFields;
-
-    /**
-     * @param array<string, mixed> $extraFields
+     * @param array<string, mixed> $extraFields Additional API fields.
      */
     public function __construct(
-        string $taxableBase,
-        ?string $taxRate = null,
-        ?string $taxAmount = null,
-        ?string $exemptOperationCode = null,
-        ?string $operationClassification = null,
-        ?string $regimeKey = null,
-        array $extraFields = array()
+        private string $taxableBase,
+        private ?string $taxRate = null,
+        private ?string $taxAmount = null,
+        private ?string $exemptOperationCode = null,
+        private ?string $operationClassification = null,
+        private ?string $regimeKey = null,
+        private array $extraFields = []
     ) {
-        $this->taxableBase = $taxableBase;
-        $this->taxRate = $taxRate;
-        $this->taxAmount = $taxAmount;
-        $this->exemptOperationCode = $exemptOperationCode;
-        $this->operationClassification = $operationClassification;
-        $this->regimeKey = $regimeKey;
-        $this->extraFields = $extraFields;
     }
 
+    /**
+     * Return the taxable base amount.
+     *
+     * @return string
+     */
     public function getTaxableBase(): string
     {
         return $this->taxableBase;
     }
 
+    /**
+     * Return the tax rate, if set.
+     *
+     * @return string|null
+     */
     public function getTaxRate(): ?string
     {
         return $this->taxRate;
     }
 
+    /**
+     * Return the tax amount, if set.
+     *
+     * @return string|null
+     */
     public function getTaxAmount(): ?string
     {
         return $this->taxAmount;
     }
 
+    /**
+     * Return the exempt operation code, if set.
+     *
+     * @return string|null
+     */
     public function getExemptOperationCode(): ?string
     {
         return $this->exemptOperationCode;
     }
 
+    /**
+     * Return the operation classification, if set.
+     *
+     * @return string|null
+     */
     public function getOperationClassification(): ?string
     {
         return $this->operationClassification;
     }
 
     /**
-     * @return array<string, mixed>
+     * {@inheritDoc}
      */
     public function toArray(): array
     {
-        $payload = array(
+        $payload = [
             'base_imponible' => $this->taxableBase,
-        );
+        ];
 
         if ($this->taxRate !== null) {
             $payload['tipo_impositivo'] = $this->taxRate;

@@ -12,6 +12,9 @@ use Bluehost\VerifactiApi\Dto\InvoiceReference;
 use Bluehost\VerifactiApi\Dto\OtherIdentifier;
 use Bluehost\VerifactiApi\Dto\SpecialInvoiceData;
 
+/**
+ * Fluent builder for invoice create and modify requests.
+ */
 final class InvoiceBuilder
 {
     private string $series = '';
@@ -24,7 +27,7 @@ final class InvoiceBuilder
     /**
      * @var array<int, InvoiceLine>
      */
-    private array $lines = array();
+    private array $lines = [];
 
     private string $totalAmount = '';
     private ?string $nif = null;
@@ -37,12 +40,12 @@ final class InvoiceBuilder
     /**
      * @var array<int, InvoiceReference>
      */
-    private array $rectifiedInvoices = array();
+    private array $rectifiedInvoices = [];
 
     /**
      * @var array<int, InvoiceReference>
      */
-    private array $replacedInvoices = array();
+    private array $replacedInvoices = [];
 
     private ?string $incidentCode = null;
     private ?SpecialInvoiceData $specialData = null;
@@ -51,8 +54,15 @@ final class InvoiceBuilder
     /**
      * @var array<string, mixed>
      */
-    private array $extraFields = array();
+    private array $extraFields = [];
 
+    /**
+     * Set the invoice series.
+     *
+     * @param string $series Invoice series.
+     *
+     * @return self
+     */
     public function withSeries(string $series): self
     {
         $this->series = $series;
@@ -60,6 +70,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set the invoice number.
+     *
+     * @param string $number Invoice number.
+     *
+     * @return self
+     */
     public function withNumber(string $number): self
     {
         $this->number = $number;
@@ -67,6 +84,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set the issue date.
+     *
+     * @param string $issueDate Issue date in API format.
+     *
+     * @return self
+     */
     public function withIssueDate(string $issueDate): self
     {
         $this->issueDate = $issueDate;
@@ -74,6 +98,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set the operation date.
+     *
+     * @param string $operationDate Operation date in API format.
+     *
+     * @return self
+     */
     public function withOperationDate(string $operationDate): self
     {
         $this->operationDate = $operationDate;
@@ -81,6 +112,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set the invoice type code.
+     *
+     * @param string $invoiceType Invoice type code.
+     *
+     * @return self
+     */
     public function withInvoiceType(string $invoiceType): self
     {
         $this->invoiceType = $invoiceType;
@@ -88,6 +126,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set the invoice description.
+     *
+     * @param string $description Invoice description.
+     *
+     * @return self
+     */
     public function withDescription(string $description): self
     {
         $this->description = $description;
@@ -95,6 +140,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Append an invoice line.
+     *
+     * @param InvoiceLine $line Invoice line payload.
+     *
+     * @return self
+     */
     public function addLine(InvoiceLine $line): self
     {
         $this->lines[] = $line;
@@ -102,6 +154,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set the total invoice amount.
+     *
+     * @param string $totalAmount Total amount.
+     *
+     * @return self
+     */
     public function withTotalAmount(string $totalAmount): self
     {
         $this->totalAmount = $totalAmount;
@@ -109,6 +168,14 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set recipient data using a Spanish NIF.
+     *
+     * @param string $nif           Recipient NIF.
+     * @param string $recipientName Recipient name.
+     *
+     * @return self
+     */
     public function withRecipient(string $nif, string $recipientName): self
     {
         $this->nif = $nif;
@@ -117,6 +184,14 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set recipient data using a foreign identifier.
+     *
+     * @param OtherIdentifier $identifier    Foreign identifier.
+     * @param string|null     $recipientName Optional recipient name.
+     *
+     * @return self
+     */
     public function withOtherIdentifier(OtherIdentifier $identifier, ?string $recipientName = null): self
     {
         $this->otherIdentifier = $identifier;
@@ -125,6 +200,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Enable or disable recipient validation.
+     *
+     * @param bool $enabled Whether recipient validation is enabled.
+     *
+     * @return self
+     */
     public function validateRecipient(bool $enabled = true): self
     {
         $this->validateRecipient = $enabled;
@@ -132,17 +214,31 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Apply corrective invoice data from a builder.
+     *
+     * @param CorrectiveInvoiceBuilder $builder Corrective data builder.
+     *
+     * @return self
+     */
     public function withCorrectiveData(CorrectiveInvoiceBuilder $builder): self
     {
         $payload = $builder->build();
         $this->rectificationType = isset($payload['tipo_rectificativa']) ? (string) $payload['tipo_rectificativa'] : null;
-        $this->rectificationAmounts = isset($payload['importe_rectificativa']) ? $payload['importe_rectificativa'] : null;
-        $this->rectifiedInvoices = isset($payload['facturas_rectificadas']) ? $payload['facturas_rectificadas'] : array();
-        $this->replacedInvoices = isset($payload['facturas_sustituidas']) ? $payload['facturas_sustituidas'] : array();
+        $this->rectificationAmounts = $payload['importe_rectificativa'] ?? null;
+        $this->rectifiedInvoices = $payload['facturas_rectificadas'] ?? [];
+        $this->replacedInvoices = $payload['facturas_sustituidas'] ?? [];
 
         return $this;
     }
 
+    /**
+     * Set special invoice data.
+     *
+     * @param SpecialInvoiceData $specialData Special invoice payload.
+     *
+     * @return self
+     */
     public function withSpecialData(SpecialInvoiceData $specialData): self
     {
         $this->specialData = $specialData;
@@ -150,6 +246,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set the incident code.
+     *
+     * @param string $incidentCode Incident code.
+     *
+     * @return self
+     */
     public function withIncidentCode(string $incidentCode): self
     {
         $this->incidentCode = $incidentCode;
@@ -157,6 +260,13 @@ final class InvoiceBuilder
         return $this;
     }
 
+    /**
+     * Set the previous rejection status for modify requests.
+     *
+     * @param string $previousRejectionStatus Previous rejection status code.
+     *
+     * @return self
+     */
     public function withPreviousRejectionStatus(string $previousRejectionStatus): self
     {
         $this->previousRejectionStatus = $previousRejectionStatus;
@@ -165,15 +275,25 @@ final class InvoiceBuilder
     }
 
     /**
-     * @param mixed $value
+     * Add an extra API field not covered by first-class properties.
+     *
+     * @param string $key   Field name.
+     * @param mixed  $value Field value.
+     *
+     * @return self
      */
-    public function withExtraField(string $key, $value): self
+    public function withExtraField(string $key, mixed $value): self
     {
         $this->extraFields[$key] = $value;
 
         return $this;
     }
 
+    /**
+     * Build an invoice create request.
+     *
+     * @return InvoiceCreateRequest
+     */
     public function buildCreate(): InvoiceCreateRequest
     {
         return new InvoiceCreateRequest(
@@ -199,6 +319,11 @@ final class InvoiceBuilder
         );
     }
 
+    /**
+     * Build an invoice modify request.
+     *
+     * @return InvoiceModifyRequest
+     */
     public function buildModify(): InvoiceModifyRequest
     {
         return new InvoiceModifyRequest(
