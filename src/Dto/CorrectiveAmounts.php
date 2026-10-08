@@ -14,10 +14,12 @@ final class CorrectiveAmounts implements Arrayable
     /**
      * @param string $baseRectificada  Rectified taxable base.
      * @param string $cuotaRectificada Rectified tax amount.
+     * @param string|null $cuotaRecargoRectificada Rectified equivalence surcharge amount.
      */
     public function __construct(
         private string $baseRectificada,
-        private string $cuotaRectificada
+        private string $cuotaRectificada,
+        private ?string $cuotaRecargoRectificada = null
     ) {
     }
 
@@ -42,13 +44,29 @@ final class CorrectiveAmounts implements Arrayable
     }
 
     /**
+     * Return the rectified equivalence surcharge amount, if set.
+     *
+     * @return string|null
+     */
+    public function getCuotaRecargoRectificada(): ?string
+    {
+        return $this->cuotaRecargoRectificada;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function toArray(): array
     {
-        return [
+        $payload = [
             'base_rectificada' => $this->baseRectificada,
             'cuota_rectificada' => $this->cuotaRectificada,
         ];
+
+        if ($this->cuotaRecargoRectificada !== null) {
+            $payload['cuota_recargo_rectificada'] = $this->cuotaRecargoRectificada;
+        }
+
+        return $payload;
     }
 }

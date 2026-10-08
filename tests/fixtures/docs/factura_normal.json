@@ -1,0 +1,17 @@
+{
+  "serie": "A",
+  "numero": "1",
+  "fecha_expedicion": "CURRENT_DATE",
+  "tipo_factura": "F1",
+  "descripcion": "Normal invoice",
+  "nif": "A15022510",
+  "nombre": "Customer name",
+  "lineas": [
+    {
+      "base_imponible": "200",
+      "tipo_impositivo": "21",
+      "cuota_repercutida": "42"
+    }
+  ],
+  "importe_total": "242"
+}
