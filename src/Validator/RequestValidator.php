@@ -266,7 +266,9 @@ final class RequestValidator
             'importe_total' => $request->getTotalAmount(),
         ]));
 
-        if (!DateHelper::isToday($request->getIssueDate(), $this->clock)) {
+        // Only new records must be issued today; a modify request identifies an
+        // existing record by its original fecha_expedicion.
+        if (!$request instanceof InvoiceModifyRequest && !DateHelper::isToday($request->getIssueDate(), $this->clock)) {
             $errors[] = 'fecha_expedicion must match the current date.';
         }
 

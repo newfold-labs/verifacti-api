@@ -40,6 +40,12 @@ final class InvoiceValidationRulesTest extends TestCase
         $this->assertErrorContains('fecha_expedicion must match the current date.', $this->f1()->withIssueDate('07-10-2026')->buildCreate());
     }
 
+    public function testModifyKeepsOriginalIssueDate(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $this->validator->validateModify($this->f1()->withIssueDate('01-03-2026')->withPreviousRejectionStatus('N')->buildModify());
+    }
+
     public function testUnknownInvoiceTypeIsRejected(): void
     {
         $this->assertErrorContains('tipo_factura must be one of', $this->f1()->withInvoiceType('Rx')->buildCreate());
