@@ -38,7 +38,7 @@ In your composer.json file add these lines:
     }
   },
     "require": {
-    "newfold-labs/verifacti-api": "0.2.0"
+    "newfold-labs/verifacti-api": "0.3.0"
   },
 ```
 
@@ -96,6 +96,9 @@ Supported config keys:
 - `api_key`
 - `timeout`
 - `environment`
+- `max_retries` (0-5, default 2): retries for transient failures (timeouts, HTTP 409/429/5xx).
+  Only GET requests and requests sent with an `Idempotency-Key` are retried, so a retry can never
+  create a duplicate record. `Retry-After` is honoured, capped at the policy's max delay.
 
 ## Public API
 
@@ -219,7 +222,40 @@ $line = (new InvoiceLineBuilder())
     ->build();
 ```
 
+### Code lists
+
+Closed API vocabularies are exposed as constant classes under `Bluehost\VerifactiApi\Enum`
+(`InvoiceType`, `RectificationType`, `TaxType`, `OperationQualification`, `ExemptionCause`,
+`RegimeKey`, `IdType`, `PreviousRejection`). Each has `values()` and `isValid()`.
+
+### IGIC / IPSI lines
+
+```php
+use Bluehost\VerifactiApi\Enum\TaxType;
+
+$line = (new InvoiceLineBuilder())
+    ->withTaxType(TaxType::IGIC) // "03"; TaxType::IPSI is "02"; omitted means IVA ("01")
+    ->withTaxableBase('200')
+    ->withTax('7', '14')
+    ->build();
+```
+
+### Amounts
+
+`Bluehost\VerifactiApi\Support\Amount` formats and sums amounts on integer cents
+(`Amount::format(12.345)` → `"12.35"`, `Amount::sum('200', '42')` → `"242.00"`).
+
 ### Corrective invoice builder
+
+By differences (`I`): signed deltas, no `importe_rectificativa`.
+
+```php
+$corrective = (new CorrectiveInvoiceBuilder())
+    ->byDifference()
+    ->addCorrectedInvoice(new InvoiceReference('A', '1', '07-04-2025'));
+```
+
+By substitution (`S`): `importe_rectificativa` is required.
 
 ```php
 use Bluehost\VerifactiApi\Builder\CorrectiveInvoiceBuilder;
@@ -240,6 +276,24 @@ $corrective = (new CorrectiveInvoiceBuilder())
 ### Special and pagination objects
 
 Because the public documentation does not fully document the inner shape of the API fields `especial`, `rango_fecha_expedicion`, and `paginacion`, the library models them as typed wrapper objects around associative arrays so you can stay compatible with future documented variants without changing the library core.
+
+## Validation
+
+`RequestValidator` runs before every request and rejects, among others:
+
+- unknown `tipo_factura`, `tipo_rectificativa`, `impuesto`, `calificacion_operacion`,
+  `operacion_exenta` (E7/E8 only for IGIC), `clave_regimen`, `id_otro.id_type`;
+- recipient data on F2/R5, and a missing `nombre` + `nif`/`id_otro` on F1/F3/R1-R4;
+- `importe_rectificativa` without `S` (or missing with `S`), `facturas_rectificadas` on non-R
+  invoices, `facturas_sustituidas` on non-F3 invoices;
+- amounts that are not `(+|-)?\d{1,12}(\.\d{0,2})?`, unpaired rate/quota or surcharge fields,
+  quota sign different from the base on S1 lines (except `I`, R2, R3);
+- `importe_total` vs the sum of the lines and quota vs base x rate beyond the tolerance
+  (default: the API's own 10 EUR; pass stricter values to the constructor);
+- F2 invoices above 3000 EUR unless `especial.factura_sin_identif_destinatario_art_61d` is `S`.
+
+Responses expose `getVerificationUrl()` (`url`), `getHash()` (`huella`) and
+`isIdempotentReplay()`; `ApiException::getErrorCode()` returns the API `codigo`.
 
 ## Exception hierarchy
 
@@ -280,6 +334,7 @@ verifacti-api/
 │   ├── Client/
 │   ├── Config/
 │   ├── Dto/
+│   ├── Enum/
 │   ├── Exception/
 │   ├── Serializer/
 │   ├── Service/
@@ -287,6 +342,9 @@ verifacti-api/
 │   ├── Transport/
 │   └── Validator/
 └── tests/
-    ├── Builder/
+    ├── Builder/       (includes DocumentationFixturesTest)
+    ├── Double/        (FakeTransport)
+    ├── fixtures/docs/ (Verifacti documentation examples)
+    ├── Service/
     └── Validator/
 ```
