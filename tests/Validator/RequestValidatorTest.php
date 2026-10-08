@@ -26,7 +26,7 @@ final class RequestValidatorTest extends TestCase
             'F1',
             'Test invoice',
             $lines,
-            '121',
+            '157.30',
             null,
             'A15022510',
             null,
