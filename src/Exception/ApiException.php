@@ -45,4 +45,16 @@ class ApiException extends HttpException
     {
         return $this->errorData;
     }
+
+    /**
+     * Return the Verifacti error code (`codigo`, e.g. `vf-verifactu-factura_duplicada`), if present.
+     *
+     * @return string|null
+     */
+    public function getErrorCode(): ?string
+    {
+        $value = $this->errorData['codigo'] ?? null;
+
+        return is_scalar($value) && (string) $value !== '' ? (string) $value : null;
+    }
 }

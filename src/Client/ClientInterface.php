@@ -79,20 +79,22 @@ interface ClientInterface
     /**
      * Modify an existing invoice.
      *
-     * @param InvoiceModifyRequest $request Modify payload.
+     * @param InvoiceModifyRequest $request        Modify payload.
+     * @param string|null          $idempotencyKey Optional idempotency key.
      *
      * @return InvoiceOperationResponse
      */
-    public function modifyInvoice(InvoiceModifyRequest $request): InvoiceOperationResponse;
+    public function modifyInvoice(InvoiceModifyRequest $request, ?string $idempotencyKey = null): InvoiceOperationResponse;
 
     /**
      * Cancel an existing invoice.
      *
-     * @param InvoiceCancelRequest $request Cancel payload.
+     * @param InvoiceCancelRequest $request        Cancel payload.
+     * @param string|null          $idempotencyKey Optional idempotency key.
      *
      * @return InvoiceOperationResponse
      */
-    public function cancelInvoice(InvoiceCancelRequest $request): InvoiceOperationResponse;
+    public function cancelInvoice(InvoiceCancelRequest $request, ?string $idempotencyKey = null): InvoiceOperationResponse;
 
     /**
      * List invoices for a fiscal period.

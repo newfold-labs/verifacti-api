@@ -16,6 +16,7 @@ final class VerifactiConfig
     private AuthenticationConfig $authentication;
     private int $timeoutSeconds;
     private string $environment;
+    private int $maxRetries;
 
     /**
      * @param AuthenticationConfig $authentication API authentication settings.
@@ -27,8 +28,13 @@ final class VerifactiConfig
     public function __construct(
         AuthenticationConfig $authentication,
         int $timeoutSeconds = 30,
-        string $environment = Environment::CUSTOM
+        string $environment = Environment::CUSTOM,
+        int $maxRetries = 2
     ) {
+        if ($maxRetries < 0 || $maxRetries > 5) {
+            throw new ConfigurationException('max_retries must be between 0 and 5.');
+        }
+
         if ($timeoutSeconds <= 0) {
             throw new ConfigurationException('The timeout must be greater than zero.');
         }
@@ -40,6 +46,17 @@ final class VerifactiConfig
         $this->authentication = $authentication;
         $this->timeoutSeconds = $timeoutSeconds;
         $this->environment = $environment;
+        $this->maxRetries = $maxRetries;
+    }
+
+    /**
+     * Return how many times a retry-safe request is retried on transient failures.
+     *
+     * @return int
+     */
+    public function getMaxRetries(): int
+    {
+        return $this->maxRetries;
     }
 
     /**
