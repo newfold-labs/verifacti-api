@@ -161,6 +161,56 @@ abstract class AbstractInvoiceRequest implements Arrayable
     }
 
     /**
+     * Return the recipient NIF, if set.
+     *
+     * @return string|null
+     */
+    public function getNif(): ?string
+    {
+        return $this->nif;
+    }
+
+    /**
+     * Return the recipient foreign identifier, if set.
+     *
+     * @return OtherIdentifier|null
+     */
+    public function getOtherIdentifier(): ?OtherIdentifier
+    {
+        return $this->otherIdentifier;
+    }
+
+    /**
+     * Return the recipient name, if set.
+     *
+     * @return string|null
+     */
+    public function getRecipientName(): ?string
+    {
+        return $this->recipientName;
+    }
+
+    /**
+     * Return the special invoice data, if set.
+     *
+     * @return SpecialInvoiceData|null
+     */
+    public function getSpecialData(): ?SpecialInvoiceData
+    {
+        return $this->specialData;
+    }
+
+    /**
+     * Return the incident code, if set.
+     *
+     * @return string|null
+     */
+    public function getIncidentCode(): ?string
+    {
+        return $this->incidentCode;
+    }
+
+    /**
      * Build a modify request from this invoice payload.
      *
      * @param string|null $series                  Override serie.

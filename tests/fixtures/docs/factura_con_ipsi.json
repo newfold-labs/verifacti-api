@@ -1,0 +1,18 @@
+{
+  "serie": "A",
+  "numero": "1",
+  "fecha_expedicion": "CURRENT_DATE",
+  "tipo_factura": "F1",
+  "descripcion": "Operation with IPSI",
+  "nif": "A15022510",
+  "nombre": "Customer name",
+  "lineas": [
+    {
+      "impuesto": "02",
+      "base_imponible": "200",
+      "tipo_impositivo": "4",
+      "cuota_repercutida": "8"
+    }
+  ],
+  "importe_total": "208"
+}

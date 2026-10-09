@@ -1,0 +1,18 @@
+{
+  "serie": "A",
+  "numero": "1",
+  "fecha_expedicion": "CURRENT_DATE",
+  "tipo_factura": "F1",
+  "descripcion": "Operation with IGIC",
+  "nif": "A15022510",
+  "nombre": "Customer name",
+  "lineas": [
+    {
+      "impuesto": "03",
+      "base_imponible": "200",
+      "tipo_impositivo": "7",
+      "cuota_repercutida": "14"
+    }
+  ],
+  "importe_total": "214"
+}

@@ -1,0 +1,25 @@
+{
+  "serie": "RECTIFICATIVA",
+  "numero": "6",
+  "fecha_expedicion": "CURRENT_DATE",
+  "tipo_factura": "R3",
+  "tipo_rectificativa": "I",
+  "descripcion": "Operation description: correction by differences for non-payment",
+  "nif": "A15022510",
+  "nombre": "Recipient name",
+  "lineas": [
+    {
+      "base_imponible": "0",
+      "tipo_impositivo": "21",
+      "cuota_repercutida": "-210"
+    }
+  ],
+  "importe_total": "-210",
+  "facturas_rectificadas": [
+    {
+      "serie": "A",
+      "numero": "1",
+      "fecha_expedicion": "07-04-2025"
+    }
+  ]
+}

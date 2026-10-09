@@ -51,15 +51,8 @@ final class InvoiceService
     {
         $this->validator->validateCreate($request);
 
-        $headers = [];
-        if ($idempotencyKey !== null && trim($idempotencyKey) !== '') {
-            $normalizedIdempotencyKey = trim($idempotencyKey);
-            HttpHeaderHelper::assertSafeRequestHeaderValue($normalizedIdempotencyKey, 'Idempotency-Key');
-            $headers['Idempotency-Key'] = $normalizedIdempotencyKey;
-        }
-
         return InvoiceOperationResponse::fromApiResponse(
-            $this->executor->post('/verifactu/create', $request->toArray(), $headers)
+            $this->executor->post('/verifactu/create', $request->toArray(), $this->idempotencyHeaders($idempotencyKey))
         );
     }
 
@@ -89,7 +82,8 @@ final class InvoiceService
     /**
      * Modify an existing invoice.
      *
-     * @param InvoiceModifyRequest $request Modify payload.
+     * @param InvoiceModifyRequest $request        Modify payload.
+     * @param string|null          $idempotencyKey Optional idempotency key header value.
      *
      * @return InvoiceOperationResponse
      *
@@ -100,19 +94,20 @@ final class InvoiceService
      * @throws SerializationException
      * @throws TransportException
      */
-    public function modify(InvoiceModifyRequest $request): InvoiceOperationResponse
+    public function modify(InvoiceModifyRequest $request, ?string $idempotencyKey = null): InvoiceOperationResponse
     {
         $this->validator->validateModify($request);
 
         return InvoiceOperationResponse::fromApiResponse(
-            $this->executor->put('/verifactu/modify', $request->toArray())
+            $this->executor->put('/verifactu/modify', $request->toArray(), $this->idempotencyHeaders($idempotencyKey))
         );
     }
 
     /**
      * Cancel an invoice.
      *
-     * @param InvoiceCancelRequest $request Cancel payload.
+     * @param InvoiceCancelRequest $request        Cancel payload.
+     * @param string|null          $idempotencyKey Optional idempotency key header value.
      *
      * @return InvoiceOperationResponse
      *
@@ -123,12 +118,12 @@ final class InvoiceService
      * @throws SerializationException
      * @throws TransportException
      */
-    public function cancel(InvoiceCancelRequest $request): InvoiceOperationResponse
+    public function cancel(InvoiceCancelRequest $request, ?string $idempotencyKey = null): InvoiceOperationResponse
     {
         $this->validator->validateCancel($request);
 
         return InvoiceOperationResponse::fromApiResponse(
-            $this->executor->post('/verifactu/cancel', $request->toArray())
+            $this->executor->post('/verifactu/cancel', $request->toArray(), $this->idempotencyHeaders($idempotencyKey))
         );
     }
 
@@ -153,5 +148,30 @@ final class InvoiceService
         return InvoiceListResponse::fromApiResponse(
             $this->executor->post('/verifactu/list', $request->toArray())
         );
+    }
+
+    /**
+     * Build the `Idempotency-Key` header (printable ASCII, 1-255 chars per the API docs).
+     *
+     * @param string|null $idempotencyKey Optional key.
+     *
+     * @return array<string, string>
+     *
+     * @throws ValidationException When the key is unsafe or too long.
+     */
+    private function idempotencyHeaders(?string $idempotencyKey): array
+    {
+        if ($idempotencyKey === null || trim($idempotencyKey) === '') {
+            return [];
+        }
+
+        $key = trim($idempotencyKey);
+        HttpHeaderHelper::assertSafeRequestHeaderValue($key, 'Idempotency-Key');
+
+        if (strlen($key) > 255 || preg_match('/^[\x20-\x7E]+$/', $key) !== 1) {
+            throw new ValidationException('The request payload is invalid.', ['Idempotency-Key must be 1-255 printable ASCII characters.']);
+        }
+
+        return ['Idempotency-Key' => $key];
     }
 }

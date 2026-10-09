@@ -6,6 +6,7 @@ namespace Bluehost\VerifactiApi\Builder;
 
 use Bluehost\VerifactiApi\Dto\CorrectiveAmounts;
 use Bluehost\VerifactiApi\Dto\InvoiceReference;
+use Bluehost\VerifactiApi\Enum\RectificationType;
 
 /**
  * Fluent builder for corrective invoice metadata.
@@ -32,7 +33,7 @@ final class CorrectiveInvoiceBuilder
      */
     public function bySubstitution(): self
     {
-        $this->rectificationType = 'S';
+        $this->rectificationType = RectificationType::SUBSTITUTION;
 
         return $this;
     }
@@ -44,7 +45,7 @@ final class CorrectiveInvoiceBuilder
      */
     public function byDifference(): self
     {
-        $this->rectificationType = 'I';
+        $this->rectificationType = RectificationType::DIFFERENCES;
 
         return $this;
     }
@@ -54,12 +55,16 @@ final class CorrectiveInvoiceBuilder
      *
      * @param string $baseRectificada   Rectified taxable base.
      * @param string $cuotaRectificada  Rectified tax amount.
+     * @param string|null $cuotaRecargoRectificada Rectified equivalence surcharge amount.
      *
      * @return self
      */
-    public function withRectifiedAmounts(string $baseRectificada, string $cuotaRectificada): self
-    {
-        $this->rectificationAmounts = new CorrectiveAmounts($baseRectificada, $cuotaRectificada);
+    public function withRectifiedAmounts(
+        string $baseRectificada,
+        string $cuotaRectificada,
+        ?string $cuotaRecargoRectificada = null
+    ): self {
+        $this->rectificationAmounts = new CorrectiveAmounts($baseRectificada, $cuotaRectificada, $cuotaRecargoRectificada);
 
         return $this;
     }

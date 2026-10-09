@@ -1,0 +1,20 @@
+{
+  "serie": "Ejemplos",
+  "numero": "1",
+  "fecha_expedicion": "CURRENT_DATE",
+  "tipo_factura": "F2",
+  "descripcion": "Simplified invoice",
+  "lineas": [
+    {
+      "base_imponible": "200",
+      "tipo_impositivo": "21",
+      "cuota_repercutida": "42"
+    },
+    {
+      "base_imponible": "100",
+      "tipo_impositivo": "10",
+      "cuota_repercutida": "10"
+    }
+  ],
+  "importe_total": "352"
+}
