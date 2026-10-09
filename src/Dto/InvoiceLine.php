@@ -12,7 +12,10 @@ use Bluehost\VerifactiApi\Support\Arrayable;
 final class InvoiceLine implements Arrayable
 {
     /**
-     * @param array<string, mixed> $extraFields Additional API fields.
+     * @param array<string, mixed> $extraFields     Additional API fields.
+     * @param string|null          $taxType         `impuesto` code, see {@see \Bluehost\VerifactiApi\Enum\TaxType}.
+     * @param string|null          $surchargeRate   `tipo_recargo_equivalencia`.
+     * @param string|null          $surchargeAmount `cuota_recargo_equivalencia`.
      */
     public function __construct(
         private string $taxableBase,
@@ -21,7 +24,10 @@ final class InvoiceLine implements Arrayable
         private ?string $exemptOperationCode = null,
         private ?string $operationClassification = null,
         private ?string $regimeKey = null,
-        private array $extraFields = []
+        private array $extraFields = [],
+        private ?string $taxType = null,
+        private ?string $surchargeRate = null,
+        private ?string $surchargeAmount = null
     ) {
     }
 
@@ -76,13 +82,57 @@ final class InvoiceLine implements Arrayable
     }
 
     /**
+     * Return the regime key, if set.
+     *
+     * @return string|null
+     */
+    public function getRegimeKey(): ?string
+    {
+        return $this->regimeKey;
+    }
+
+    /**
+     * Return the tax type (`impuesto`), if set. The API defaults to IVA (`01`).
+     *
+     * @return string|null
+     */
+    public function getTaxType(): ?string
+    {
+        return $this->taxType;
+    }
+
+    /**
+     * Return the equivalence surcharge rate, if set.
+     *
+     * @return string|null
+     */
+    public function getSurchargeRate(): ?string
+    {
+        return $this->surchargeRate;
+    }
+
+    /**
+     * Return the equivalence surcharge amount, if set.
+     *
+     * @return string|null
+     */
+    public function getSurchargeAmount(): ?string
+    {
+        return $this->surchargeAmount;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function toArray(): array
     {
-        $payload = [
-            'base_imponible' => $this->taxableBase,
-        ];
+        $payload = [];
+
+        if ($this->taxType !== null) {
+            $payload['impuesto'] = $this->taxType;
+        }
+
+        $payload['base_imponible'] = $this->taxableBase;
 
         if ($this->taxRate !== null) {
             $payload['tipo_impositivo'] = $this->taxRate;
@@ -102,6 +152,14 @@ final class InvoiceLine implements Arrayable
 
         if ($this->regimeKey !== null) {
             $payload['clave_regimen'] = $this->regimeKey;
+        }
+
+        if ($this->surchargeRate !== null) {
+            $payload['tipo_recargo_equivalencia'] = $this->surchargeRate;
+        }
+
+        if ($this->surchargeAmount !== null) {
+            $payload['cuota_recargo_equivalencia'] = $this->surchargeAmount;
         }
 
         return array_merge($payload, $this->extraFields);

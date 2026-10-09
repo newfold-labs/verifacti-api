@@ -53,11 +53,13 @@ final class ConfigFactory
         $timeout = isset($options['timeout']) ? (int) $options['timeout'] : 30;
         $environment = isset($options['environment']) ? (string) $options['environment'] : Environment::CUSTOM;
         $apiKey = isset($options['api_key']) ? (string) $options['api_key'] : '';
+        $maxRetries = isset($options['max_retries']) ? (int) $options['max_retries'] : 2;
 
         return new VerifactiConfig(
             new AuthenticationConfig($apiKey),
             $timeout,
-            $environment
+            $environment,
+            $maxRetries
         );
     }
 }

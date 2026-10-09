@@ -1,0 +1,24 @@
+{
+  "serie": "A",
+  "numero": "1",
+  "fecha_expedicion": "CURRENT_DATE",
+  "tipo_factura": "F3",
+  "descripcion": "Operation description",
+  "nif": "A15022510",
+  "nombre": "Customer name",
+  "lineas": [
+    {
+      "base_imponible": "200",
+      "tipo_impositivo": "21",
+      "cuota_repercutida": "42"
+    }
+  ],
+  "facturas_sustituidas": [
+    {
+      "serie": "SIMPLE",
+      "numero": "1",
+      "fecha_expedicion": "19-06-2025"
+    }
+  ],
+  "importe_total": "242"
+}

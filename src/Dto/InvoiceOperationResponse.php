@@ -76,4 +76,45 @@ final class InvoiceOperationResponse extends ApiResponse
 
         return is_scalar($value) ? (string) $value : null;
     }
+
+    /**
+     * Return the AEAT verification URL (`url`) encoded in the QR, if present.
+     *
+     * @return string|null
+     */
+    public function getVerificationUrl(): ?string
+    {
+        $value = ResponseAccessor::first($this->getData(), ['url', 'data.url']);
+
+        return is_scalar($value) ? (string) $value : null;
+    }
+
+    /**
+     * Return the record hash (`huella`), if present.
+     *
+     * @return string|null
+     */
+    public function getHash(): ?string
+    {
+        $value = ResponseAccessor::first($this->getData(), ['huella', 'data.huella']);
+
+        return is_scalar($value) ? (string) $value : null;
+    }
+
+    /**
+     * Whether the response was replayed from the API idempotency store
+     * (`Idempotent-Replayed: true` header).
+     *
+     * @return bool
+     */
+    public function isIdempotentReplay(): bool
+    {
+        foreach ($this->getHeaders() as $name => $value) {
+            if (strtolower((string) $name) === 'idempotent-replayed') {
+                return strtolower(trim((string) $value)) === 'true';
+            }
+        }
+
+        return false;
+    }
 }

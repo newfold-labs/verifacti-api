@@ -1,0 +1,30 @@
+{
+  "serie": "RECTIFICATIVA",
+  "numero": "1",
+  "fecha_expedicion": "CURRENT_DATE",
+  "fecha_operacion": "01-04-2025",
+  "tipo_factura": "R1",
+  "tipo_rectificativa": "S",
+  "descripcion": "Correction by substitution in two steps",
+  "nif": "A15022510",
+  "nombre": "Recipient name",
+  "lineas": [
+    {
+      "base_imponible": "800",
+      "tipo_impositivo": "21",
+      "cuota_repercutida": "168"
+    }
+  ],
+  "importe_total": "968",
+  "importe_rectificativa": {
+    "base_rectificada": "0",
+    "cuota_rectificada": "0"
+  },
+  "facturas_rectificadas": [
+    {
+      "serie": "A",
+      "numero": "1",
+      "fecha_expedicion": "07-04-2025"
+    }
+  ]
+}

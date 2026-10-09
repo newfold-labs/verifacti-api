@@ -11,6 +11,16 @@ use Bluehost\VerifactiApi\Support\ResponseAccessor;
  */
 final class StatusResponse extends ApiResponse
 {
+    public const STATUS_PENDING = 'Pendiente';
+    public const STATUS_CORRECT = 'Correcto';
+    public const STATUS_ACCEPTED_WITH_ERRORS = 'Aceptado con errores';
+    public const STATUS_INCORRECT = 'Incorrecto';
+    public const STATUS_DUPLICATE = 'Duplicado';
+    public const STATUS_CANCELLED = 'Anulado';
+    public const STATUS_NOT_FOUND = 'Factura inexistente';
+    public const STATUS_NOT_REGISTERED = 'No registrado';
+    public const STATUS_AEAT_SERVER_ERROR = 'Error servidor AEAT';
+
     /**
      * Create a typed response from a generic API response.
      *
@@ -63,5 +73,65 @@ final class StatusResponse extends ApiResponse
         $status = $this->getStatus();
 
         return $status !== null && strtolower($status) === 'pendiente';
+    }
+
+    /**
+     * Return the AEAT verification URL (`url`), if present.
+     *
+     * @return string|null
+     */
+    public function getVerificationUrl(): ?string
+    {
+        $value = ResponseAccessor::first($this->getData(), ['url', 'data.url']);
+
+        return is_scalar($value) ? (string) $value : null;
+    }
+
+    /**
+     * Return the QR code as a base64 string, if present.
+     *
+     * @return string|null
+     */
+    public function getQrCodeBase64(): ?string
+    {
+        $value = ResponseAccessor::first($this->getData(), ['qr', 'data.qr']);
+
+        return is_scalar($value) ? (string) $value : null;
+    }
+
+    /**
+     * Return the AEAT error code (`codigo_error`), if present.
+     *
+     * @return string|null
+     */
+    public function getErrorCode(): ?string
+    {
+        $value = ResponseAccessor::first($this->getData(), ['codigo_error', 'data.codigo_error']);
+
+        return is_scalar($value) && (string) $value !== '' ? (string) $value : null;
+    }
+
+    /**
+     * Return the AEAT error message (`mensaje_error`), if present.
+     *
+     * @return string|null
+     */
+    public function getErrorMessage(): ?string
+    {
+        $value = ResponseAccessor::first($this->getData(), ['mensaje_error', 'data.mensaje_error']);
+
+        return is_scalar($value) && (string) $value !== '' ? (string) $value : null;
+    }
+
+    /**
+     * Whether AEAT accepted the record (`Correcto` or `Aceptado con errores`).
+     *
+     * Source: Verifacti OpenAPI spec, GET /verifactu/status, field `estado`.
+     *
+     * @return bool
+     */
+    public function isAccepted(): bool
+    {
+        return in_array($this->getStatus(), [self::STATUS_CORRECT, self::STATUS_ACCEPTED_WITH_ERRORS], true);
     }
 }

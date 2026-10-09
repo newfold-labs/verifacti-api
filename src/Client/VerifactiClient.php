@@ -28,6 +28,7 @@ use Bluehost\VerifactiApi\Service\DeclarationService;
 use Bluehost\VerifactiApi\Service\ExportService;
 use Bluehost\VerifactiApi\Service\HealthService;
 use Bluehost\VerifactiApi\Service\InvoiceService;
+use Bluehost\VerifactiApi\Service\RetryPolicy;
 use Bluehost\VerifactiApi\Service\StatusService;
 use Bluehost\VerifactiApi\Transport\HttpTransportInterface;
 use Bluehost\VerifactiApi\Validator\RequestValidator;
@@ -46,13 +47,15 @@ final class VerifactiClient implements ClientInterface
     /**
      * @param VerifactiConfig          $config    Client configuration.
      * @param HttpTransportInterface $transport HTTP transport implementation.
+     * @param RetryPolicy|null       $retryPolicy Optional retry policy (defaults to config `max_retries`).
      */
     public function __construct(
         private VerifactiConfig $config,
-        HttpTransportInterface $transport
+        HttpTransportInterface $transport,
+        ?RetryPolicy $retryPolicy = null
     ) {
         $validator = new RequestValidator();
-        $executor = new ApiExecutor($config, $transport, new JsonSerializer());
+        $executor = new ApiExecutor($config, $transport, new JsonSerializer(), $retryPolicy);
 
         $this->healthService = new HealthService($executor);
         $this->statusService = new StatusService($executor, $validator);
@@ -114,17 +117,17 @@ final class VerifactiClient implements ClientInterface
     /**
      * {@inheritDoc}
      */
-    public function modifyInvoice(InvoiceModifyRequest $request): InvoiceOperationResponse
+    public function modifyInvoice(InvoiceModifyRequest $request, ?string $idempotencyKey = null): InvoiceOperationResponse
     {
-        return $this->invoiceService->modify($request);
+        return $this->invoiceService->modify($request, $idempotencyKey);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function cancelInvoice(InvoiceCancelRequest $request): InvoiceOperationResponse
+    public function cancelInvoice(InvoiceCancelRequest $request, ?string $idempotencyKey = null): InvoiceOperationResponse
     {
-        return $this->invoiceService->cancel($request);
+        return $this->invoiceService->cancel($request, $idempotencyKey);
     }
 
     /**

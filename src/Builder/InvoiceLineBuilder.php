@@ -17,6 +17,9 @@ final class InvoiceLineBuilder
     private ?string $exemptOperationCode = null;
     private ?string $operationClassification = null;
     private ?string $regimeKey = null;
+    private ?string $taxType = null;
+    private ?string $surchargeRate = null;
+    private ?string $surchargeAmount = null;
 
     /**
      * @var array<string, mixed>
@@ -96,6 +99,36 @@ final class InvoiceLineBuilder
     }
 
     /**
+     * Set the tax type (`impuesto`): IVA `01`, IPSI `02`, IGIC `03`, other `05`.
+     *
+     * @param string $taxType Tax type code, see {@see \Bluehost\VerifactiApi\Enum\TaxType}.
+     *
+     * @return self
+     */
+    public function withTaxType(string $taxType): self
+    {
+        $this->taxType = $taxType;
+
+        return $this;
+    }
+
+    /**
+     * Set the equivalence surcharge (recargo de equivalencia) rate and amount.
+     *
+     * @param string $rate   `tipo_recargo_equivalencia`.
+     * @param string $amount `cuota_recargo_equivalencia`.
+     *
+     * @return self
+     */
+    public function withEquivalenceSurcharge(string $rate, string $amount): self
+    {
+        $this->surchargeRate = $rate;
+        $this->surchargeAmount = $amount;
+
+        return $this;
+    }
+
+    /**
      * Add an extra API field not covered by first-class properties.
      *
      * @param string $key   Field name.
@@ -124,7 +157,10 @@ final class InvoiceLineBuilder
             $this->exemptOperationCode,
             $this->operationClassification,
             $this->regimeKey,
-            $this->extraFields
+            $this->extraFields,
+            $this->taxType,
+            $this->surchargeRate,
+            $this->surchargeAmount
         );
     }
 }

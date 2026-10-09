@@ -13,6 +13,7 @@ use Bluehost\VerifactiApi\Exception\SerializationException;
 use Bluehost\VerifactiApi\Exception\TransportException;
 use Bluehost\VerifactiApi\Serializer\JsonSerializer;
 use Bluehost\VerifactiApi\Support\ResponseAccessor;
+use Bluehost\VerifactiApi\Support\SensitiveDataHelper;
 use Bluehost\VerifactiApi\Transport\HttpRequest;
 use Bluehost\VerifactiApi\Transport\HttpResponse;
 use Bluehost\VerifactiApi\Transport\HttpTransportInterface;
@@ -22,11 +23,21 @@ use Bluehost\VerifactiApi\Transport\HttpTransportInterface;
  */
 final class ApiExecutor
 {
+    private RetryPolicy $retryPolicy;
+
+    /**
+     * @param VerifactiConfig        $config      Client configuration.
+     * @param HttpTransportInterface $transport   HTTP transport.
+     * @param JsonSerializer         $serializer  JSON serializer.
+     * @param RetryPolicy|null       $retryPolicy Retry policy; defaults to the config's `max_retries`.
+     */
     public function __construct(
         private VerifactiConfig $config,
         private HttpTransportInterface $transport,
-        private JsonSerializer $serializer
+        private JsonSerializer $serializer,
+        ?RetryPolicy $retryPolicy = null
     ) {
+        $this->retryPolicy = $retryPolicy ?? new RetryPolicy($config->getMaxRetries());
     }
 
     /**
@@ -119,9 +130,8 @@ final class ApiExecutor
             unset($requestHeaders['Content-Type']);
         }
 
-        $response = $this->transport->send(
-            new HttpRequest($method, $path, $requestHeaders, $query, $body, $this->config->getTimeoutSeconds()),
-            $this->config
+        $response = $this->sendWithRetries(
+            new HttpRequest($method, $path, $requestHeaders, $query, $body, $this->config->getTimeoutSeconds())
         );
 
         if (!$response->isSuccessful()) {
@@ -137,6 +147,59 @@ final class ApiExecutor
             $response->getHeaders(),
             $response->getMetadata()
         );
+    }
+
+    /**
+     * Send a request, retrying transient failures when it is safe to do so.
+     *
+     * @param HttpRequest $request Outbound request.
+     *
+     * @return HttpResponse
+     *
+     * @throws TransportException When every attempt fails at transport level.
+     */
+    private function sendWithRetries(HttpRequest $request): HttpResponse
+    {
+        $retrySafe = $this->retryPolicy->isRetrySafe($request->getMethod(), $request->getHeaders());
+        $maxRetries = $retrySafe ? $this->retryPolicy->getMaxRetries() : 0;
+
+        for ($retry = 0; ; $retry++) {
+            try {
+                $response = $this->transport->send($request, $this->config);
+            } catch (TransportException $exception) {
+                if ($retry >= $maxRetries) {
+                    throw $exception;
+                }
+
+                $this->retryPolicy->wait($this->retryPolicy->delayFor($retry + 1));
+                continue;
+            }
+
+            if ($retry >= $maxRetries || !$this->retryPolicy->isRetryableStatus($response->getStatusCode())) {
+                return $response;
+            }
+
+            $this->retryPolicy->wait($this->retryPolicy->delayFor($retry + 1, $this->headerValue($response, 'retry-after')));
+        }
+    }
+
+    /**
+     * Read a response header case-insensitively.
+     *
+     * @param HttpResponse $response HTTP response.
+     * @param string       $name     Lower-case header name.
+     *
+     * @return string|null
+     */
+    private function headerValue(HttpResponse $response, string $name): ?string
+    {
+        foreach ($response->getHeaders() as $headerName => $value) {
+            if (strtolower((string) $headerName) === $name) {
+                return (string) $value;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -180,7 +243,9 @@ final class ApiExecutor
         $statusCode = $response->getStatusCode();
 
         if (!$this->looksLikeJson($response)) {
-            $message = trim($body) !== '' ? trim($body) : sprintf('HTTP %d returned by the Verifacti API.', $statusCode);
+            $message = trim($body) !== ''
+                ? SensitiveDataHelper::sanitizeForMessage(trim($body))
+                : sprintf('HTTP %d returned by the Verifacti API.', $statusCode);
 
             throw match (true) {
                 $statusCode === 401, $statusCode === 403 => new AuthenticationException($message, $statusCode, $headers, $body),
@@ -207,7 +272,9 @@ final class ApiExecutor
             sprintf('HTTP %d returned by the Verifacti API.', $statusCode)
         );
 
-        $message = is_scalar($messageValue) ? (string) $messageValue : sprintf('HTTP %d returned by the Verifacti API.', $statusCode);
+        $message = is_scalar($messageValue)
+            ? SensitiveDataHelper::sanitizeForMessage((string) $messageValue)
+            : sprintf('HTTP %d returned by the Verifacti API.', $statusCode);
 
         throw match (true) {
             $statusCode === 401, $statusCode === 403 => new AuthenticationException($message, $statusCode, $headers, $body),
